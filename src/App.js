@@ -7,11 +7,22 @@ const initialItems = [
 ];
 
 export default function App() {
+// lifting up the state so that it could be rendered on packinglist
+  const [items,setItem] = useState([]);
+
+  function handleItem(item){
+    setItem((items)=>[...items,item])
+  };
+
+  function handleDeleteItem(id){
+    setItem((items)=>(items).filter((item)=>item.id!==id))
+  }
+
   return (
     <div className="app">
       <Logo />
-      <Form />
-      <PackingList />
+      <Form  onAddItems={handleItem}/>
+      <PackingList items={items} onDeleteItems={handleDeleteItem} />
       <Stats />
     </div>
   );
@@ -21,9 +32,11 @@ function Logo() {
   return <h1>Far Away</h1>;
 }
 
-function Form() {
+function Form({onAddItems}) {
   const [description, setDescription] = useState(" ");
   const [quantity, setQuantity] = useState(1);
+
+
   function handleSubmit(e) {
     if(!description) return ;
     const data = {
@@ -32,7 +45,7 @@ function Form() {
       id:Date.now(),
       packed:false,
     }
-    console.log(data);
+    onAddItems(data);
     setDescription("");
     setQuantity(1);
     e.preventDefault();
@@ -55,25 +68,25 @@ function Form() {
   );
 }
 
-function PackingList() {
+function PackingList({items, onDeleteItems }) {
   return (
     <div className="list">
       <ul>
-        {initialItems.map((item) => (
-          <Item hello={item} key={item.id} />
+        {items.map((item) => (
+          <Item hello={item} onDeleteItems={onDeleteItems} key={item.id} />
         ))}
       </ul>
     </div>
   );
 }
 
-function Item({ hello }) {
+function Item({ hello, onDeleteItems }) {
   return (
     <li>
       <span style={hello.packed ? { textDecoration: "line-through" } : {}}>
         {hello.description} {hello.quantity}
       </span>
-      <button style={{ color: "red" }}>X</button>
+      <button style={{ color: "red" }} onClick={()=>{onDeleteItems(hello.id)}}>X</button>
     </li>
   );
 }
